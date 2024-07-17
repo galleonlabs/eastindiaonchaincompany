@@ -114,7 +114,7 @@ function App() {
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
       },
       {
-        label: 'Aggregated Yield as % of Treasury Value',
+        label: 'Cumulative Yield as % of Treasury Value',
         data: aggregatedYieldData,
         borderColor: 'rgba(255, 99, 132, 1)',
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -126,6 +126,7 @@ function App() {
     responsive: true,
     scales: {
       y: {
+        beginAtZero: true,
         type: 'linear',
         display: true,
         position: 'left',
@@ -152,9 +153,9 @@ function App() {
 
       <TreasuryAssets assets={treasuryAssets} />
 
-      <div className="mx-auto border-l border-r border-theme-pan-navy bg-theme-pan-champagne  pb-4 ">
+      <div className="mx-auto border-l border-r border-theme-pan-navy bg-theme-pan-champagne pt-4 pb-2 ">
         <h1 className="text-xl pl-6 font-bold text-left">Yield Performance</h1>
-        <div className="mx-8 rounded-sm pb-3 pt-4">
+        <div className="mx-8 rounded-sm pb-3 pt-3">
           <Line data={chartData} options={chartOptions} />
         </div>
       </div>
