@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter var", ...defaultTheme.fontFamily.sans],
+        sans: ["Bona Nova SC", ...defaultTheme.fontFamily.sans],
       },
       colors: {
         "theme-pan-navy": " #27272A",

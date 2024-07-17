@@ -110,7 +110,7 @@ function App() {
       {
         label: 'Yield as % of Treasury Value',
         data: yieldData.map(yieldEntry => (yieldEntry.quantity / totalTreasuryValue) * 100),
-        borderColor: 'rgba(75, 192, 192, 1)',
+        borderColor: '#0072B5',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
       },
       {
@@ -152,9 +152,9 @@ function App() {
 
       <TreasuryAssets assets={treasuryAssets} />
 
-      <div className="mx-auto border-b border-l border-theme-pan-navy bg-theme-pan-champagne rounded-bl rounded-tr py-4 mt-6">
-        <h1 className="text-lg pl-4 font-bold text-left">Yield Performance</h1>
-        <div className="mx-8 rounded-sm pb-3 pt-2">
+      <div className="mx-auto border-l border-r border-theme-pan-navy bg-theme-pan-champagne  pb-4 ">
+        <h1 className="text-xl pl-6 font-bold text-left">Yield Performance</h1>
+        <div className="mx-8 rounded-sm pb-3 pt-4">
           <Line data={chartData} options={chartOptions} />
         </div>
       </div>
