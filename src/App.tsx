@@ -3,7 +3,6 @@ import logo from './assets/logo.png';
 import './App.css';
 import { format } from 'date-fns';
 import TreasuryAssets from './TreasuryAssets';
-import ResourceHarvests from './ResourceHarvests';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ChartOptions } from 'chart.js';
 import { fetchData, fetchPrices } from './utils';
@@ -19,13 +18,6 @@ interface TreasuryAsset {
   usdValue?: number;
 }
 
-interface Harvest {
-  assetSymbol: string;
-  id: string;
-  quantity: number;
-  date: { seconds: number; nanoseconds: number };
-}
-
 interface Yield {
   quantity: number;
   date: { seconds: number; nanoseconds: number };
@@ -33,11 +25,8 @@ interface Yield {
 
 function App() {
   const [treasuryAssets, setTreasuryAssets] = useState<TreasuryAsset[]>([]);
-  const [harvestAssets, setHarvestAssets] = useState<Harvest[]>([]);
   const [yieldData, setYieldData] = useState<Yield[]>([]);
   const [totalTreasuryValue, setTotalTreasuryValue] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchTreasuryAssets = async () => {
@@ -61,15 +50,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const fetchHarvestAssets = async () => {
-      const harvests = await fetchData('harvests') as Harvest[];
-      setHarvestAssets(harvests);
-    };
-
-    fetchHarvestAssets();
-  }, []);
-
-  useEffect(() => {
     const fetchYieldData = async () => {
       const yields = await fetchData('yieldOvertime') as Yield[];
 
@@ -81,23 +61,6 @@ function App() {
     fetchYieldData();
   }, [totalTreasuryValue]);
 
-  const groupedHarvestAssets = harvestAssets.reduce((acc, harvest) => {
-    const date = format(new Date(harvest.date.seconds * 1000), 'dd/MM/yyyy');
-    if (!acc[date]) {
-      acc[date] = [];
-    }
-    acc[date].push(harvest.assetSymbol);
-    return acc;
-  }, {} as Record<string, string[]>);
-
-  const groupedHarvestAssetsArray = Object.entries(groupedHarvestAssets).map(([date, symbols]) => ({
-    date,
-    symbols: symbols.join(', '),
-  }));
-
-  const totalPages = Math.ceil(groupedHarvestAssetsArray.length / itemsPerPage);
-
-  // Calculate the aggregated yield over time
   let aggregatedYield = 0;
   const aggregatedYieldData = yieldData.map(yieldEntry => {
     aggregatedYield += yieldEntry.quantity;
@@ -108,13 +71,13 @@ function App() {
     labels: yieldData.map(yieldEntry => format(new Date(yieldEntry.date.seconds * 1000), 'dd/MM/yyyy')),
     datasets: [
       {
-        label: 'Yield as % of Treasury Value',
+        label: 'Harvest Yield as % of Treasury',
         data: yieldData.map(yieldEntry => (yieldEntry.quantity / totalTreasuryValue) * 100),
         borderColor: '#0072B5',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
       },
       {
-        label: 'Cumulative Yield as % of Treasury Value',
+        label: 'Cumulative Yield as % of Treasury',
         data: aggregatedYieldData,
         borderColor: 'rgba(255, 99, 132, 1)',
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -151,22 +114,26 @@ function App() {
         </p>
       </div>
 
+
       <TreasuryAssets assets={treasuryAssets} />
 
-      <div className="mx-auto border-l border-r border-theme-pan-navy bg-theme-pan-champagne pt-4 pb-2 ">
+      <div className="mx-auto border-l border-r border-b border-theme-pan-navy rounded-sm bg-theme-pan-champagne pt-4 pb-2 ">
         <h1 className="text-xl pl-6 font-bold text-left">Yield Performance</h1>
         <div className="mx-8 rounded-sm pb-3 pt-3">
           <Line data={chartData} options={chartOptions} />
         </div>
+
+        <div className=" mx-auto flex justify-evenly max-w-4xl py-3 pb-1 border-t border-theme-pan-navy pt-3">
+          <a target='_blank' href='https://twitter.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Twitter</a>
+          <a target='_blank' href='https://twitter.com/davyjones0x' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Davy Jones</a>
+          <a target='_blank' href='https://galleonlabs.io' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Galleon Labs</a>
+          <a target='_blank' href='https://github.com/galleonlabs/tortuga-onchain' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Github</a>
+        </div>
       </div>
 
-      <ResourceHarvests
-        harvestAssets={groupedHarvestAssetsArray}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        setCurrentPage={setCurrentPage}
-        itemsPerPage={itemsPerPage}
-      />
+
+    
+
     </div>
   );
 }
