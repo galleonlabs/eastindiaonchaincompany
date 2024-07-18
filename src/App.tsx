@@ -124,10 +124,10 @@ function App() {
         </div>
 
         <div className=" mx-auto flex justify-evenly max-w-4xl py-3 pb-1 border-t border-theme-pan-navy pt-3">
-          <a target='_blank' href='https://twitter.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Twitter</a>
-          <a target='_blank' href='https://twitter.com/davyjones0x' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Davy Jones</a>
-          <a target='_blank' href='https://galleonlabs.io' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Galleon Labs</a>
-          <a target='_blank' href='https://github.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Github</a>
+          <a target='_blank' href='https://twitter.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Twitter</a>
+          <a target='_blank' href='https://twitter.com/davyjones0x' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Davy Jones</a>
+          <a target='_blank' href='https://galleonlabs.io' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Galleon Labs</a>
+          <a target='_blank' href='https://github.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Github</a>
         </div>
       </div>
 
