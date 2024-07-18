@@ -127,7 +127,7 @@ function App() {
           <a target='_blank' href='https://twitter.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Twitter</a>
           <a target='_blank' href='https://twitter.com/davyjones0x' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Davy Jones</a>
           <a target='_blank' href='https://galleonlabs.io' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Galleon Labs</a>
-          <a target='_blank' href='https://github.com/galleonlabs/tortuga-onchain' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Github</a>
+          <a target='_blank' href='https://github.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-yellow border-transparent'>Github</a>
         </div>
       </div>
 
