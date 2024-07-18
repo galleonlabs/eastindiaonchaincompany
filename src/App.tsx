@@ -123,7 +123,7 @@ function App() {
           <Line data={chartData} options={chartOptions} />
         </div>
 
-        <div className=" mx-auto flex justify-evenly max-w-4xl py-3 pb-1 border-t border-theme-pan-navy pt-3">
+        <div className=" mx-auto flex justify-evenly max-w-4xl py-3 pb-1 border-t border-theme-pan-navy pt-3 mt-3">
           <a target='_blank' href='https://twitter.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Twitter</a>
           <a target='_blank' href='https://twitter.com/davyjones0x' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Davy Jones</a>
           <a target='_blank' href='https://galleonlabs.io' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Galleon Labs</a>
