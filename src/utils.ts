@@ -52,7 +52,7 @@ export const calculateRollingAPR = (
   totalTreasuryValue: number,
   rollingPeriodDays: number = 30
 ) => {
-  const rollingAPR = yieldData.map((entry, index) => {
+  const rollingAPR = yieldData.map((_, index) => {
     const availableDays = Math.min(index + 1, rollingPeriodDays);
     const rollingPeriodData = yieldData.slice(Math.max(index + 1 - rollingPeriodDays, 0), index + 1);
     const rollingTotalUSD = rollingPeriodData.reduce((sum, e) => sum + e.totalUSD, 0);
