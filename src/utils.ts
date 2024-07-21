@@ -3,6 +3,13 @@ import { collection, getDocs } from "firebase/firestore";
 import axios from "axios";
 import { db } from "./main";
 
+export interface Harvest {
+  assetSymbol: string;
+  id: string;
+  quantity: number;
+  date: { seconds: number; nanoseconds: number };
+}
+
 export const fetchData = async (collectionName: string) => {
   const querySnapshot = await getDocs(collection(db, collectionName));
   return querySnapshot.docs.map((doc) => doc.data());
@@ -26,4 +33,32 @@ export const fetchPrices = async (assetIds: string[]) => {
   }
 
   return cachedPrices;
+};
+
+export const groupByDate = (harvests: Harvest[]) => {
+  const grouped = harvests.reduce((acc: Record<string, Harvest[]>, harvest: Harvest) => {
+    const date = new Date(harvest.date.seconds * 1000).toISOString().split("T")[0];
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(harvest);
+    return acc;
+  }, {});
+  return grouped;
+};
+
+export const calculateRollingAPR = (
+  yieldData: { date: string; totalUSD: number }[],
+  totalTreasuryValue: number,
+  rollingPeriodDays: number = 30
+) => {
+  const rollingAPR = yieldData.map((entry, index) => {
+    const availableDays = Math.min(index + 1, rollingPeriodDays);
+    const rollingPeriodData = yieldData.slice(Math.max(index + 1 - rollingPeriodDays, 0), index + 1);
+    const rollingTotalUSD = rollingPeriodData.reduce((sum, e) => sum + e.totalUSD, 0);
+    const averageDailyYield = rollingTotalUSD / availableDays;
+    const annualizedYield = averageDailyYield * 365;
+    return (annualizedYield / totalTreasuryValue) * 100; // Annualized yield as a percentage
+  });
+  return rollingAPR;
 };

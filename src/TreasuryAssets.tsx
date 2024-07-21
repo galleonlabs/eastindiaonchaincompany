@@ -15,7 +15,7 @@ interface TreasuryAssetsProps {
 }
 
 const TreasuryAssets: React.FC<TreasuryAssetsProps> = ({ assets }) => (
-  <div className="mx-auto border-l border-t border-r border-theme-pan-navy bg-theme-pan-champagne rounded-sm  py-4 mt-6">
+  <div className="mx-auto border-l border-t border-r border-theme-pan-navy bg-theme-pan-champagne rounded-sm  pt-6 pb-4 mt-6">
     <h1 className="text-xl pl-6 font-bold text-left">Treasury Yield Assets</h1>
     <div className="mx-8 rounded-sm pt-4 flex flex-wrap">
       {assets.map((link, index) => (

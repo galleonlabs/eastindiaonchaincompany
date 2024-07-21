@@ -3,9 +3,9 @@ import logo from './assets/logo.png';
 import './App.css';
 import { format } from 'date-fns';
 import TreasuryAssets from './TreasuryAssets';
+import { calculateRollingAPR, fetchData, fetchPrices, groupByDate, Harvest } from './utils';
+import { ChartOptions, Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ChartOptions } from 'chart.js';
-import { fetchData, fetchPrices } from './utils';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -18,14 +18,14 @@ interface TreasuryAsset {
   usdValue?: number;
 }
 
-interface Yield {
-  quantity: number;
-  date: { seconds: number; nanoseconds: number };
+interface YieldData {
+  date: string;
+  totalUSD: number;
 }
 
 function App() {
   const [treasuryAssets, setTreasuryAssets] = useState<TreasuryAsset[]>([]);
-  const [yieldData, setYieldData] = useState<Yield[]>([]);
+  const [yieldData, setYieldData] = useState<YieldData[]>([]);
   const [totalTreasuryValue, setTotalTreasuryValue] = useState<number>(0);
 
   useEffect(() => {
@@ -50,38 +50,46 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const fetchYieldData = async () => {
-      const yields = await fetchData('yieldOvertime') as Yield[];
+    const fetchHarvestAssets = async () => {
+      const harvests = await fetchData('harvests') as Harvest[];
 
-      // Sort the yield data by date in chronological order
-      const sortedYields = yields.sort((a, b) => a.date.seconds - b.date.seconds);
-      setYieldData(sortedYields);
+      const groupedHarvests = groupByDate(harvests);
+      const dates = Object.keys(groupedHarvests);
+
+      const allIds = [...new Set(harvests.map(h => h.id))];
+      const prices = await fetchPrices(allIds);
+
+      const yieldData = dates.map(date => {
+        const totalUSD = groupedHarvests[date].reduce((sum, h) => {
+          const price = prices[h.id];
+          return sum + (price * h.quantity);
+        }, 0);
+        return { date, totalUSD };
+      });
+
+      setYieldData(yieldData);
     };
 
-    fetchYieldData();
-  }, [totalTreasuryValue]);
+    fetchHarvestAssets();
+  }, []);
 
-  let aggregatedYield = 0;
-  const aggregatedYieldData = yieldData.map(yieldEntry => {
-    aggregatedYield += yieldEntry.quantity;
-    return (aggregatedYield / totalTreasuryValue) * 100;
-  });
+  const rollingAPR = calculateRollingAPR(yieldData, totalTreasuryValue);
 
   const chartData = {
-    labels: yieldData.map(yieldEntry => format(new Date(yieldEntry.date.seconds * 1000), 'dd/MM/yyyy')),
+    labels: yieldData.map(yieldEntry => format(new Date(yieldEntry.date), 'dd/MM/yyyy')),
     datasets: [
       {
-        label: 'Harvest Yield as % of Treasury',
-        data: yieldData.map(yieldEntry => (yieldEntry.quantity / totalTreasuryValue) * 100),
-        borderColor: '#0072B5',
+        label: 'Yield as % of Treasury',
+        data: yieldData.map(yieldEntry => (yieldEntry.totalUSD / totalTreasuryValue) * 100),
+        borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
       },
       {
         label: 'Cumulative Yield as % of Treasury',
-        data: aggregatedYieldData,
+        data: yieldData.map(yieldEntry => (yieldEntry.totalUSD / totalTreasuryValue) * 100),
         borderColor: 'rgba(255, 99, 132, 1)',
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
-      }
+      },
     ]
   };
 
@@ -89,10 +97,10 @@ function App() {
     responsive: true,
     scales: {
       y: {
-        beginAtZero: true,
         type: 'linear',
         display: true,
         position: 'left',
+        beginAtZero: true,
         ticks: {
           callback: function (value) {
             return `${Number(value).toFixed(2)}%`;
@@ -114,25 +122,22 @@ function App() {
         </p>
       </div>
 
-
       <TreasuryAssets assets={treasuryAssets} />
 
-      <div className="mx-auto border-l border-r border-b border-theme-pan-navy rounded-sm bg-theme-pan-champagne pt-4 pb-2 ">
+      <div className="mx-auto border-b border-l border-r border-theme-pan-navy bg-theme-pan-champagne rounded-bl rounded-br pb-4">
         <h1 className="text-xl pl-6 font-bold text-left">Yield Performance</h1>
-        <div className="mx-8 rounded-sm pb-3 pt-3">
+        <p className='text-md pl-6 text-left'>Rolling APR: {Number(rollingAPR).toFixed(2)}%</p>
+        <div className="mx-8 rounded-sm pb-3 pt-2">
           <Line data={chartData} options={chartOptions} />
-        </div>
-
-        <div className=" mx-auto flex justify-evenly max-w-4xl py-3 pb-1 border-t border-theme-pan-navy pt-3 mt-3">
-          <a target='_blank' href='https://twitter.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Twitter</a>
-          <a target='_blank' href='https://twitter.com/davyjones0x' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Davy Jones</a>
-          <a target='_blank' href='https://galleonlabs.io' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Galleon Labs</a>
-          <a target='_blank' href='https://github.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Github</a>
         </div>
       </div>
 
-
-    
+      <div className=" mx-auto flex justify-evenly max-w-4xl py-3 pb-1  ">
+        <a target='_blank' href='https://twitter.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Twitter</a>
+        <a target='_blank' href='https://twitter.com/davyjones0x' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Davy Jones</a>
+        <a target='_blank' href='https://galleonlabs.io' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Galleon Labs</a>
+        <a target='_blank' href='https://github.com/galleonlabs' className='text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent'>Github</a>
+      </div>
 
     </div>
   );
