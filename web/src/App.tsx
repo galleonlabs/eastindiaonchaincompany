@@ -38,7 +38,7 @@ function App() {
             <a target="_blank" className="text-theme-pan-sky font-semibold hover:opacity-80" href={"https://basescan.org/token/" + metaData.contract}>
               Contract
             </a>
-          </div> *
+          </div>
         </div>
       </div>
     </div>
