@@ -17,7 +17,7 @@ function App() {
 
   async function fetchMetadata() {
     const response = await fetch(
-      "https://turquoise-important-monkey-585.mypinata.cloud/ipfs/QmeaL52VPe8wRt4r8iDmbgzfarsDQL7BS8qzcpvPd8qHtp"
+      "https://turquoise-important-monkey-585.mypinata.cloud/ipfs/QmeB8HyinSajqeQ6XQpcFuTs7ok5J7Tz61K7QY2e37LSq5"
     );
     const metadata = await response.json();
     setMetaData(metadata);
@@ -33,12 +33,12 @@ function App() {
         <div className="text-center pt-4">
           <h1 className="text-2xl font-bold">East India Onchain Company</h1>
           <p className="text-lg">A Crypto Guild</p>
-          <div className="pt-2 mt-2 border-t border-theme-pan-navy w-1/2 justify-center text-center m-auto">   
+           <div className="pt-2 mt-2 border-t border-theme-pan-navy w-1/2 justify-center text-center m-auto">   
             <p>Token: <span className="font-semibold">${metaData.symbol}</span></p>
             <a target="_blank" className="text-theme-pan-sky font-semibold hover:opacity-80" href={"https://basescan.org/token/" + metaData.contract}>
               Contract
             </a>
-          </div>
+          </div> *
         </div>
       </div>
     </div>
