@@ -17,7 +17,7 @@ function App() {
 
   async function fetchMetadata() {
     const response = await fetch(
-      "https://turquoise-important-monkey-585.mypinata.cloud/ipfs/QmeB8HyinSajqeQ6XQpcFuTs7ok5J7Tz61K7QY2e37LSq5"
+      "https://turquoise-important-monkey-585.mypinata.cloud/ipfs/QmTXavXN3c6UUnnVJ8ADC1rwRgnojGz8SjsQRooEvs9Smj"
     );
     const metadata = await response.json();
     setMetaData(metadata);
