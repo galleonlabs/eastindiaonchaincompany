@@ -9,24 +9,24 @@ const db = admin.firestore();
 
 const harvest = [
   {
-    assetSymbol: "CRVUSD",
-    id: "crvusd",
-    quantity: 0,
+    assetSymbol: "USDC",
+    id: "usd-coin",
+    quantity: 2898.66,
   },
   {
     assetSymbol: "USDC",
     id: "usd-coin",
-    quantity: 0,
+    quantity: 320.29,
   },
   {
-    assetSymbol: "CRV",
-    id: "curve-dao-token",
-    quantity: 0,
+    assetSymbol: "USDC",
+    id: "usd-coin",
+    quantity: 2798,
   },
   {
-    assetSymbol: "CVX",
-    id: "convex-finance",
-    quantity: 0,
+    assetSymbol: "USDC",
+    id: "usd-coin",
+    quantity: 2831.81,
   },
 ];
 

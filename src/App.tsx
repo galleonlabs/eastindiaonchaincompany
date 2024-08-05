@@ -53,7 +53,7 @@ function App() {
     const fetchHarvestAssets = async () => {
       const harvests = await fetchData('harvests') as Harvest[];
 
-      const groupedHarvests = groupByDate(harvests);
+      const groupedHarvests = groupByDate(harvests.sort(((a: Harvest, b: Harvest) => a.date.seconds - b.date.seconds)));
       const dates = Object.keys(groupedHarvests);
 
       const allIds = [...new Set(harvests.map(h => h.id))];
@@ -86,7 +86,12 @@ function App() {
       },
       {
         label: 'Cumulative Yield as % of Treasury',
-        data: yieldData.map(yieldEntry => (yieldEntry.totalUSD / totalTreasuryValue) * 100),
+        data: yieldData.reduce((acc, yieldEntry) => {
+          const currentValue = (yieldEntry.totalUSD / totalTreasuryValue) * 100;
+          const previousValue = acc.length > 0 ? acc[acc.length - 1] : 0;
+          acc.push(previousValue + currentValue);
+          return acc;
+        }, [] as number[]),
         borderColor: 'rgba(255, 99, 132, 1)',
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
       },
