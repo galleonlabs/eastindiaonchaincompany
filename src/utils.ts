@@ -74,6 +74,7 @@ export const calculateRollingAPR = (yieldData: { date: string; totalUSD: number 
 
   return APR;
 };
+
 export interface TreasuryAsset {
   href: string;
   imgSrc: string;
