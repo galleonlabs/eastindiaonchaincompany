@@ -47,18 +47,42 @@ export const groupByDate = (harvests: Harvest[]) => {
   return grouped;
 };
 
-export const calculateRollingAPR = (
-  yieldData: { date: string; totalUSD: number }[],
-  totalTreasuryValue: number,
-  rollingPeriodDays: number = 30
-) => {
-  const rollingAPR = yieldData.map((_, index) => {
-    const availableDays = Math.min(index + 1, rollingPeriodDays);
-    const rollingPeriodData = yieldData.slice(Math.max(index + 1 - rollingPeriodDays, 0), index + 1);
-    const rollingTotalUSD = rollingPeriodData.reduce((sum, e) => sum + e.totalUSD, 0);
-    const averageDailyYield = rollingTotalUSD / availableDays;
-    const annualizedYield = averageDailyYield * 365;
-    return (annualizedYield / totalTreasuryValue) * 100; // Annualized yield as a percentage
-  });
-  return rollingAPR;
+export const calculateRollingAPR = (yieldData: { date: string; totalUSD: number }[], totalTreasuryValue: number) => {
+  if (yieldData.length < 4 || totalTreasuryValue <= 0) {
+    return 0; // Return 0 if there's not enough data or invalid treasury value
+  }
+
+  // Get the last 4 data points
+  const lastFourDataPoints = yieldData.slice(-4);
+
+  // Calculate total yield for the last 4 data points
+  const totalYield = lastFourDataPoints.reduce((sum, entry) => sum + entry.totalUSD, 0);
+
+  // Calculate the time span in days
+  const startDate = new Date(lastFourDataPoints[0].date);
+  const endDate = new Date(lastFourDataPoints[3].date);
+  const daysDifference = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+
+  // Calculate daily yield
+  const averageDailyYield = totalYield / daysDifference;
+
+  // Annualize the yield
+  const annualizedYield = averageDailyYield * 365;
+
+  // Calculate APR as a percentage
+  const APR = (annualizedYield / totalTreasuryValue) * 100;
+
+  return APR;
 };
+export interface TreasuryAsset {
+  href: string;
+  imgSrc: string;
+  id: string;
+  symbol: string;
+  quantity: number;
+  usdValue?: number;
+}
+export interface YieldData {
+  date: string;
+  totalUSD: number;
+}
