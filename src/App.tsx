@@ -85,6 +85,51 @@ function App() {
 
   const rollingAPR = useMemo(() => calculateRollingAPR(yieldData, totalTreasuryValue), [yieldData, totalTreasuryValue]);
 
+  const yieldFrequency = useMemo(() => {
+    const sortedDates = yieldData.map((d) => new Date(d.date)).sort((a, b) => a.getTime() - b.getTime());
+    const differences = sortedDates
+      .slice(1)
+      .map((date, i) => (date.getTime() - sortedDates[i].getTime()) / (1000 * 3600 * 24));
+    return {
+      averageDays: differences.reduce((a, b) => a + b, 0) / differences.length,
+      minDays: Math.min(...differences),
+      maxDays: Math.max(...differences),
+    };
+  }, [yieldData]);
+
+  const yieldConsistencyScore = useMemo(() => {
+    const yields = yieldData.map((d) => d.totalUSD);
+    const mean = yields.reduce((a, b) => a + b, 0) / yields.length;
+    const variance = yields.reduce((sum, y) => sum + Math.pow(y - mean, 2), 0) / yields.length;
+    const stdDev = Math.sqrt(variance);
+    const coefficientOfVariation = (stdDev / mean) * 100;
+
+    // Transform coefficient of variation to a 0-100 score
+    // where 100 is perfectly consistent (0% CV) and 0 is highly inconsistent (100% CV or more)
+    const score = Math.max(0, 100 - coefficientOfVariation);
+    return score;
+  }, [yieldData]);
+
+  const relativePerformance = useMemo(() => {
+    const average = yieldData.reduce((sum, d) => sum + d.totalUSD, 0) / yieldData.length;
+    return yieldData.map((d) => ({
+      date: d.date,
+      relativePerformance: (d.totalUSD / average) * 100,
+    }));
+  }, [yieldData]);
+
+  const latestRelativePerformance = useMemo(() => {
+    if (relativePerformance.length === 0) return 100; // Default to 100 if no data
+    const latest = relativePerformance[relativePerformance.length - 1].relativePerformance;
+    return latest - 100; // Difference from 100%
+  }, [relativePerformance]);
+
+  const yieldToTreasuryRatio = useMemo(() => {
+    const totalYield = yieldData.reduce((sum, d) => sum + d.totalUSD, 0);
+    const treasuryValue = treasuryAssets.reduce((sum, a) => sum + (a.usdValue || 0), 0);
+    return (totalYield / treasuryValue) * 100;
+  }, [yieldData, treasuryAssets]);
+
   const yieldChartData = useMemo(
     () => ({
       labels: yieldData.map((yieldEntry) => format(new Date(yieldEntry.date), "dd/MM/yyyy")),
@@ -163,7 +208,7 @@ function App() {
       <TreasuryAssets assets={treasuryAssets} />
 
       <div className="">
-        <div className="mx-auto border-b border-l border-r border-theme-pan-navy bg-theme-pan-champagne rounded-bl rounded-br pb-4">
+        <div className="mx-auto  border-l border-r border-theme-pan-navy bg-theme-pan-champagne  pb-4">
           <h1 className="text-xl pl-6 font-bold text-left">Yield Performance</h1>
           <HoverTooltip text="Based on the last 4 harvests">
             <p className="text-md pl-6 text-left">Rolling APR: {Number(rollingAPR).toFixed(2)}%</p>
@@ -173,6 +218,43 @@ function App() {
           </div>
           <div className="mx-8 rounded-sm pb-3 pt-2">
             <Line data={cumulativeYieldChartData} options={chartOptions} />
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto border-b border-l border-r border-theme-pan-navy bg-theme-pan-champagne rounded-bl rounded-br pb-6">
+        <h1 className="text-xl pl-6 font-bold text-left">Portfolio Insights</h1>
+        <div className="grid grid-cols-2 gap-4 mx-8 mt-4">
+          <div>
+            <p className="font-semibold">Average Harvest Frequency:</p>
+            <p>{yieldFrequency.averageDays} Days</p>
+          </div>
+          <div>
+            <HoverTooltip text="Measures yield consistency. Higher score indicates more consistent yields.">
+              <div>
+                <p className="font-semibold">Yield Consistency Score:</p>
+                <div className="flex items-center">
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                    <div
+                      className="bg-theme-pan-sky h-2.5 rounded-full"
+                      style={{ width: `${yieldConsistencyScore}%` }}
+                    ></div>
+                  </div>
+                  <p>{yieldConsistencyScore.toFixed(0)}/100</p>
+                </div>
+              </div>
+            </HoverTooltip>
+          </div>
+          <div>
+            <p className="font-semibold">Latest Yield Performance:</p>
+            <p className={latestRelativePerformance >= 0 ? "text-theme-pan-sky" : "text-red-600"}>
+              {latestRelativePerformance >= 0 ? "+" : ""}
+              {latestRelativePerformance.toFixed(2)}% vs average
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold">Yield to Treasury Ratio:</p>
+            <p>{yieldToTreasuryRatio.toFixed(2)}%</p>
           </div>
         </div>
       </div>
