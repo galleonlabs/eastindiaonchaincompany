@@ -109,7 +109,7 @@ function App() {
   if (!portfolioData) return null;
 
   return (
-    <div className="mx-auto max-w-4xl min-h-full text-theme-pan-navy rounded-sm mt-16 justify-center mb-32 px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-4xl min-h-full text-theme-pan-navy  rounded-sm mt-16 justify-center mb-32 px-4 sm:px-6 lg:px-8">
       <div className="justify-center flex">
         <img src={logo} className="h-32 w-32" alt="logo" />
       </div>
@@ -127,31 +127,35 @@ function App() {
             <p className="text-md pl-6 text-left">Rolling APR: {portfolioData.rollingAPR.toFixed(2)}%</p>
           </HoverTooltip>
           <div className="mx-8 rounded-sm pb-3 pt-2">
-            <Line 
+            <Line
               data={{
                 labels: portfolioData.yieldChartData.labels,
-                datasets: [{
-                  label: "Harvest Yield as % of Treasury",
-                  data: portfolioData.yieldChartData.data,
-                  borderColor: "rgba(75, 192, 192, 1)",
-                  backgroundColor: "rgba(75, 192, 192, 0.2)",
-                }]
-              }} 
-              options={chartOptions} 
+                datasets: [
+                  {
+                    label: "Harvest Yield as % of Treasury",
+                    data: portfolioData.yieldChartData.data,
+                    borderColor: "#0072B5",
+                    backgroundColor: "rgb(0, 114, 181, 0.2)",
+                  },
+                ],
+              }}
+              options={chartOptions}
             />
           </div>
           <div className="mx-8 rounded-sm pb-3 pt-2">
-            <Line 
+            <Line
               data={{
                 labels: portfolioData.cumulativeYieldChartData.labels,
-                datasets: [{
-                  label: "Cumulative Yield as % of Treasury",
-                  data: portfolioData.cumulativeYieldChartData.data,
-                  borderColor: "rgba(255, 99, 132, 1)",
-                  backgroundColor: "rgba(255, 99, 132, 0.2)",
-                }]
-              }} 
-              options={chartOptions} 
+                datasets: [
+                  {
+                    label: "Cumulative Yield as % of Treasury",
+                    data: portfolioData.cumulativeYieldChartData.data,
+                    borderColor: "rgba(255, 99, 132, 1)",
+                    backgroundColor: "rgba(255, 99, 132, 0.2)",
+                  },
+                ],
+              }}
+              options={chartOptions}
             />
           </div>
         </div>
@@ -182,7 +186,7 @@ function App() {
           </div>
           <div>
             <p className="font-semibold">Latest Yield Performance:</p>
-            <p className={portfolioData.latestRelativePerformance >= 0 ? "text-theme-pan-sky" : "text-red-600"}>
+            <p className={portfolioData.latestRelativePerformance >= 0 ? "text-theme-pan-sky" : ""}>
               {portfolioData.latestRelativePerformance >= 0 ? "+" : ""}
               {portfolioData.latestRelativePerformance.toFixed(2)}% vs average
             </p>
@@ -216,7 +220,7 @@ function App() {
         >
           Galleon Labs
         </a>
-          <a
+        <a
           target="_blank"
           href="https://github.com/galleonlabs"
           className="text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent"
