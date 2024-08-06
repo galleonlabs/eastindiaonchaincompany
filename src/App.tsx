@@ -48,7 +48,7 @@ function App() {
           const timestamp = parseInt(cachedTimestamp, 10);
 
           // Check if the cached data is less than 5 minutes old
-          if (Date.now() - timestamp < 5 * 60 * 1000) {
+          if (Date.now() - timestamp < 30 * 60 * 1000) {
             setPortfolioData(parsedData);
             setLoading(false);
             return;
