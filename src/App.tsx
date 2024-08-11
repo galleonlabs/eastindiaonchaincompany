@@ -7,6 +7,7 @@ import { Line } from "react-chartjs-2";
 import HoverTooltip from "./Tooltip";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { TreasuryAsset } from "./utils";
+import Loading from "./Loading";
 
 interface PortfolioData {
   treasuryAssets: TreasuryAsset[];
@@ -95,9 +96,7 @@ function App() {
 
   if (loading)
     return (
-      <div className="mx-auto max-w-4xl min-h-full text-theme-pan-navy rounded-sm mt-16 justify-center mb-32 text-center">
-        Loading...
-      </div>
+      <Loading/>
     );
   if (error)
     return (
