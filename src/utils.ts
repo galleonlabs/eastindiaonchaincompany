@@ -10,6 +10,27 @@ export interface Harvest {
   date: { seconds: number; nanoseconds: number };
 }
 
+export interface PortfolioData {
+  treasuryAssets: TreasuryAsset[];
+  rollingAPR: number;
+  yieldConsistencyScore: number;
+  yieldFrequency: {
+    averageDays: number;
+    minDays: number;
+    maxDays: number;
+  };
+  latestRelativePerformance: number;
+  yieldToTreasuryRatio: number;
+  yieldChartData: {
+    labels: string[];
+    data: number[];
+  };
+  cumulativeYieldChartData: {
+    labels: string[];
+    data: number[];
+  };
+}
+
 export const fetchData = async (collectionName: string) => {
   const querySnapshot = await getDocs(collection(db, collectionName));
   return querySnapshot.docs.map((doc) => doc.data());
