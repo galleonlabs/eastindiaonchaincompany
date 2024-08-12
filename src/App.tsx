@@ -1,11 +1,10 @@
 import logo from "./assets/logo.png";
 import "./App.css";
-import TreasuryAssets from "./TreasuryAssets";
-import HoverTooltip from "./Tooltip";
-import Loading from "./Loading";
-import YieldChart from "./YieldChart";
-import { usePortfolioData } from "./usePortfolioData";
-
+import TreasuryAssets from "./components/TreasuryAssets";
+import HoverTooltip from "./components/Tooltip";
+import Loading from "./components/Loading";
+import YieldChart from "./components/YieldChart";
+import { usePortfolioData } from "./hooks/usePortfolioData";
 
 function App() {
   const { portfolioData, loading, error } = usePortfolioData();

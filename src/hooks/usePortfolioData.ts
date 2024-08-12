@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { PortfolioData } from "./utils";
+import { PortfolioData } from "../utils";
 
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
