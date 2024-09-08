@@ -1,50 +1,77 @@
 import { useState, useEffect } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { PortfolioData } from "../utils";
 
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+export interface TreasuryAsset {
+  href: string;
+  imgSrc: string;
+  id: string;
+  symbol: string;
+}
+
+export interface PortfolioSummary {
+  treasuryAssets: Array<TreasuryAsset>;
+  // totalTreasuryValue: number;
+  // latestYield: number;
+  rollingAPR: number;
+}
+
+export interface DetailedPortfolioData {
+  yieldConsistencyScore: number;
+  yieldFrequency: {
+    averageDays: number;
+    minDays: number;
+    maxDays: number;
+  };
+  latestRelativePerformance: number;
+  yieldToTreasuryRatio: number;
+  yieldChartData: {
+    labels: string[];
+    data: number[];
+  };
+  cumulativeYieldChartData: {
+    labels: string[];
+    data: number[];
+  };
+}
 
 export const usePortfolioData = () => {
-  const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [summaryData, setSummaryData] = useState<PortfolioSummary | null>(null);
+  const [detailedData, setDetailedData] = useState<DetailedPortfolioData | null>(null);
+  const [loading, setLoading] = useState({ summary: true, detailed: false });
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPortfolioData = async () => {
+    const fetchSummaryData = async () => {
       try {
-        setLoading(true);
-
-        const cachedData = sessionStorage.getItem("portfolioData");
-        const cachedTimestamp = sessionStorage.getItem("portfolioDataTimestamp");
-
-        if (cachedData && cachedTimestamp) {
-          const parsedData = JSON.parse(cachedData);
-          const timestamp = parseInt(cachedTimestamp, 10);
-
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            setPortfolioData(parsedData);
-            setLoading(false);
-            return;
-          }
-        }
-
         const functions = getFunctions();
-        const getPortfolioData = httpsCallable<any, PortfolioData>(functions, "getPortfolioData");
-        const result = await getPortfolioData();
-
-        sessionStorage.setItem("portfolioData", JSON.stringify(result.data));
-        sessionStorage.setItem("portfolioDataTimestamp", Date.now().toString());
-
-        setPortfolioData(result.data);
+        const getPortfolioSummary = httpsCallable<any, PortfolioSummary>(functions, "getPortfolioSummary");
+        const result = await getPortfolioSummary();
+        setSummaryData(result.data);
       } catch (err) {
-        setError("Failed to fetch portfolio data");
+        setError("Failed to fetch summary data");
       } finally {
-        setLoading(false);
+        setLoading((prev) => ({ ...prev, summary: false }));
       }
     };
 
-    fetchPortfolioData();
+    fetchSummaryData();
   }, []);
 
-  return { portfolioData, loading, error };
+  const fetchDetailedData = async () => {
+    if (detailedData) return; // Avoid fetching if we already have the data
+
+    setLoading((prev) => ({ ...prev, detailed: true }));
+    try {
+      const functions = getFunctions();
+      const getDetailedPortfolioData = httpsCallable<any, DetailedPortfolioData>(functions, "getDetailedPortfolioData");
+      const result = await getDetailedPortfolioData();
+      setDetailedData(result.data);
+    } catch (err) {
+      setError("Failed to fetch detailed data");
+    } finally {
+      setLoading((prev) => ({ ...prev, detailed: false }));
+    }
+  };
+
+  return { summaryData, detailedData, loading, error, fetchDetailedData };
 };

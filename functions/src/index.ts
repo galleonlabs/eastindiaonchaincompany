@@ -31,9 +31,14 @@ interface Prices {
   };
 }
 
-interface PortfolioData {
+interface PortfolioSummary {
   treasuryAssets: Omit<TreasuryAsset, "quantity">[];
+  // totalTreasuryValue: number;
+  // latestYield: number;
   rollingAPR: number;
+}
+
+interface DetailedPortfolioData {
   yieldConsistencyScore: number;
   yieldFrequency: {
     averageDays: number;
@@ -52,10 +57,23 @@ interface PortfolioData {
   };
 }
 
-export const getPortfolioData = functions.https.onCall(async (data, context): Promise<PortfolioData> => {
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
+let cachedSummaryData: PortfolioSummary | null = null;
+let cachedDetailedData: DetailedPortfolioData | null = null;
+let lastFetchTime = 0;
+
+export const getPortfolioSummary = functions.https.onCall(async (data, context): Promise<PortfolioSummary> => {
+  const currentTime = Date.now();
+
+  if (cachedSummaryData && currentTime - lastFetchTime < CACHE_DURATION) {
+    return cachedSummaryData;
+  }
+
   try {
-    const treasuryAssetsSnapshot = await admin.firestore().collection("treasuryAssets").get();
-    const harvestsSnapshot = await admin.firestore().collection("harvests").get();
+    const [treasuryAssetsSnapshot, harvestsSnapshot] = await Promise.all([
+      admin.firestore().collection("treasuryAssets").get(),
+      admin.firestore().collection("harvests").get(),
+    ]);
 
     const treasuryAssets = treasuryAssetsSnapshot.docs.map((doc) => doc.data() as TreasuryAsset);
     const harvests = harvestsSnapshot.docs.map(
@@ -69,49 +87,88 @@ export const getPortfolioData = functions.https.onCall(async (data, context): Pr
     const assetIds = [...new Set([...treasuryAssets.map((asset) => asset.id), ...harvests.map((h) => h.id)])];
     const prices = await fetchPrices(assetIds);
 
-    const totalTreasuryValue = treasuryAssets.reduce((sum, asset) => sum + prices[asset.id].usd * asset.quantity, 0);
-
+    const totalTreasuryValue = calculateTotalTreasuryValue(treasuryAssets, prices);
     const yieldData = processYieldData(harvests, prices);
-
-     yieldData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
+    // const latestYield = yieldData[yieldData.length - 1].totalUSD;
     const rollingAPR = calculateRollingAPR(yieldData, totalTreasuryValue);
-    const yieldConsistencyScore = calculateYieldConsistencyScore(yieldData);
-    const yieldFrequency = calculateYieldFrequency(yieldData);
-    const latestRelativePerformance = calculateLatestRelativePerformance(yieldData);
-    const yieldToTreasuryRatio = calculateYieldToTreasuryRatio(yieldData, totalTreasuryValue);
 
-    const yieldChartData = prepareYieldChartData(yieldData, totalTreasuryValue);
-    const cumulativeYieldChartData = prepareCumulativeYieldChartData(yieldData, totalTreasuryValue);
-
-    const processedTreasuryAssets = treasuryAssets.map(({ href, imgSrc, id, symbol }) => ({
-      href,
-      imgSrc,
-      id,
-      symbol,
-    }));
-
-    return {
-      treasuryAssets: processedTreasuryAssets,
+    const summaryData: PortfolioSummary = {
+      treasuryAssets: treasuryAssets.map(({ href, imgSrc, id, symbol }) => ({ href, imgSrc, id, symbol })),
+      // totalTreasuryValue,
+      // latestYield,
       rollingAPR,
-      yieldConsistencyScore,
-      yieldFrequency,
-      latestRelativePerformance,
-      yieldToTreasuryRatio,
-      yieldChartData,
-      cumulativeYieldChartData,
     };
+
+    cachedSummaryData = summaryData;
+    lastFetchTime = currentTime;
+
+    return summaryData;
   } catch (error) {
-    console.error("Error in getPortfolioData:", error);
-    throw new functions.https.HttpsError("internal", "Failed to process portfolio data");
+    console.error("Error in getPortfolioSummary:", error);
+    throw new functions.https.HttpsError("internal", "Failed to process portfolio summary data");
   }
 });
+
+export const getDetailedPortfolioData = functions.https.onCall(
+  async (data, context): Promise<DetailedPortfolioData> => {
+    const currentTime = Date.now();
+
+    if (cachedDetailedData && currentTime - lastFetchTime < CACHE_DURATION) {
+      return cachedDetailedData;
+    }
+
+    try {
+      const [treasuryAssetsSnapshot, harvestsSnapshot] = await Promise.all([
+        admin.firestore().collection("treasuryAssets").get(),
+        admin.firestore().collection("harvests").get(),
+      ]);
+
+      const treasuryAssets = treasuryAssetsSnapshot.docs.map((doc) => doc.data() as TreasuryAsset);
+      const harvests = harvestsSnapshot.docs.map(
+        (doc) =>
+          ({
+            ...doc.data(),
+            date: doc.data().date.toDate(),
+          } as Harvest & { date: Date })
+      );
+
+      const assetIds = [...new Set([...treasuryAssets.map((asset) => asset.id), ...harvests.map((h) => h.id)])];
+      const prices = await fetchPrices(assetIds);
+
+      const yieldData = processYieldData(harvests, prices);
+      yieldData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      const totalTreasuryValue = calculateTotalTreasuryValue(treasuryAssets, prices);
+
+      const detailedData: DetailedPortfolioData = {
+        yieldConsistencyScore: calculateYieldConsistencyScore(yieldData),
+        yieldFrequency: calculateYieldFrequency(yieldData),
+        latestRelativePerformance: calculateLatestRelativePerformance(yieldData),
+        yieldToTreasuryRatio: calculateYieldToTreasuryRatio(yieldData, totalTreasuryValue),
+        yieldChartData: prepareYieldChartData(yieldData, totalTreasuryValue),
+        cumulativeYieldChartData: prepareCumulativeYieldChartData(yieldData, totalTreasuryValue),
+      };
+
+      cachedDetailedData = detailedData;
+      lastFetchTime = currentTime;
+
+      return detailedData;
+    } catch (error) {
+      console.error("Error in getDetailedPortfolioData:", error);
+      throw new functions.https.HttpsError("internal", "Failed to process detailed portfolio data");
+    }
+  }
+);
 
 async function fetchPrices(assetIds: string[]): Promise<Prices> {
   const response = await axios.get<Prices>(
     `https://api.coingecko.com/api/v3/simple/price?ids=${assetIds.join(",")}&vs_currencies=usd`
   );
   return response.data;
+}
+
+function calculateTotalTreasuryValue(treasuryAssets: TreasuryAsset[], prices: Prices): number {
+  return treasuryAssets.reduce((sum, asset) => sum + prices[asset.id].usd * asset.quantity, 0);
 }
 
 function processYieldData(harvests: (Harvest & { date: Date })[], prices: Prices): YieldData[] {
@@ -121,7 +178,6 @@ function processYieldData(harvests: (Harvest & { date: Date })[], prices: Prices
     totalUSD: harvests.reduce((sum, h) => sum + prices[h.id].usd * h.quantity, 0),
   }));
 
-  // Sort yieldData by date
   return yieldData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
@@ -134,36 +190,25 @@ function groupByDate(harvests: (Harvest & { date: Date })[]): Record<string, (Ha
   }, {} as Record<string, (Harvest & { date: Date })[]>);
 }
 
-export const calculateRollingAPR = (yieldData: { date: string; totalUSD: number }[], totalTreasuryValue: number) => {
+function calculateRollingAPR(yieldData: YieldData[], totalTreasuryValue: number) {
   if (yieldData.length < 4 || totalTreasuryValue <= 0) {
-    return 0; // Return 0 if there's not enough data or invalid treasury value
+    return 0;
   }
 
-  // Get the last 4 data points
   const lastFourDataPoints = yieldData.slice(-4);
-
-  // Calculate total yield for the last 4 data points
   const totalYield = lastFourDataPoints.reduce((sum, entry) => sum + entry.totalUSD, 0);
-
-  // Calculate the time span in days
   const startDate = new Date(lastFourDataPoints[0].date);
   const endDate = new Date(lastFourDataPoints[3].date);
   const daysDifference = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
-
-  // Calculate daily yield
   const averageDailyYield = totalYield / daysDifference;
-
-  // Annualize the yield
   const annualizedYield = averageDailyYield * 365;
-
-  // Calculate APR as a percentage
   const APR = (annualizedYield / totalTreasuryValue) * 100;
 
   return APR;
-};
+}
 
 function calculateYieldConsistencyScore(yieldData: YieldData[]): number {
-  if (yieldData.length < 2) return 100; // Perfect score if not enough data
+  if (yieldData.length < 2) return 100;
 
   const yields = yieldData.map((d) => d.totalUSD);
   const mean = yields.reduce((a, b) => a + b, 0) / yields.length;

@@ -1,21 +1,13 @@
 // TreasuryAssets.tsx
 import React from 'react';
-
-interface TreasuryAsset {
-  href: string;
-  imgSrc: string;
-  id: string;
-  symbol: string;
-  quantity: number;
-  usdValue?: number;
-}
+import { TreasuryAsset } from '../hooks/usePortfolioData';
 
 interface TreasuryAssetsProps {
   assets: TreasuryAsset[];
 }
 
 const TreasuryAssets: React.FC<TreasuryAssetsProps> = ({ assets }) => (
-  <div className="mx-auto border-l border-t border-r border-theme-pan-navy bg-theme-pan-champagne rounded-t-md  pt-6 pb-4 mt-6">
+  <div className="mx-auto border-l border-t border-b pb-6 border-r border-theme-pan-navy bg-theme-pan-champagne rounded-t-md  pt-6 mt-6">
     <h1 className="text-xl pl-6 font-bold text-left">Treasury Yield Assets</h1>
     <div className="mx-8 rounded-sm pt-4 flex flex-wrap">
       {assets.map((link, index) => (
