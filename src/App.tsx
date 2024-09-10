@@ -33,13 +33,7 @@ function App() {
       <div className="mx-auto max-w-4xl min-h-full text-theme-pan-navy rounded-sm mt-16 justify-center mb-32 px-4 sm:px-6 lg:px-8">
         <header className="text-center pt-4">
           <div className="justify-center flex">
-            {loading.summary ? (
-              <>
-                <img src={logo} className="h-32 w-32 animate-spin flex mx-auto" alt="loading" />
-              </>
-            ) : (
-              <img src={logo} className="h-32 w-32" alt="logo" />
-            )}
+            <img src={logo} className="h-32 w-32" alt="logo" />
           </div>
           <div className="text-center pt-4">
             <h1 className="text-2xl font-bold">East India Onchain Company</h1>
