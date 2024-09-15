@@ -150,13 +150,13 @@ function App() {
             >
               Davy Jones
             </a>
-            <a
+            {/* <a
               target="_blank"
               href="https://galleonlabs.io"
               className="text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent"
             >
               Galleon Labs
-            </a>
+            </a> */}
             <a
               target="_blank"
               href="https://github.com/galleonlabs"
