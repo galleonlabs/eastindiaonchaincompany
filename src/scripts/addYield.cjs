@@ -11,7 +11,7 @@ const harvest = [
   {
     assetSymbol: "USDC",
     id: "usd-coin",
-    quantity: 2221.14,
+    quantity: 0,
   },
 ];
 
