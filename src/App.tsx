@@ -36,8 +36,9 @@ function App() {
             <img src={logo} className="h-32 w-32" alt="logo" />
           </div>
           <div className="text-center pt-4">
-            <h1 className="text-2xl font-bold">East India Onchain Company</h1>
-            <p className="text-lg">Yield merchants and traders of natural crypto resources</p>
+            <p className="text-md">East India Onchain Company</p>
+            <h1 className="text-4xl font-bold">The Yield Bearer</h1>
+            <p className="text-lg">Yield merchant and trader of natural crypto resources</p>
           </div>
         </header>
 
@@ -143,13 +144,13 @@ function App() {
             >
               Twitter
             </a>
-            <a
+            {/* <a
               target="_blank"
               href="https://twitter.com/davyjones0x"
               className="text-md text-center inline-flex border-b hover:border-b-theme-pan-navy border-transparent"
             >
               Davy Jones
-            </a>
+            </a> */}
             {/* <a
               target="_blank"
               href="https://galleonlabs.io"
