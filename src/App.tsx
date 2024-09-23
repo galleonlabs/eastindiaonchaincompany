@@ -29,16 +29,16 @@ function App() {
   }
 
   return (
-    <>
-      <div className="mx-auto max-w-4xl min-h-full text-theme-pan-navy rounded-sm mt-16 justify-center mb-32 px-4 sm:px-6 lg:px-8">
-        <header className="text-center pt-4">
+    <div className=" bg-[url('/Frame.png')]   ">
+      <div className="mx-auto max-w-4xl min-h-full text-theme-pan-navy rounded-sm mt-16 justify-center mb-32 px-4 sm:px-6 lg:px-8 font-wigrum">
+        <header className="text-center pt-4 bg-theme-white/50">
           <div className="justify-center flex">
             <img src={logo} className="h-32 w-32" alt="logo" />
           </div>
           <div className="text-center pt-4">
-            <p className="text-md">East India Onchain Company</p>
-            <h1 className="text-4xl font-bold">The Yield Bearer</h1>
-            <p className="text-lg">Yield merchant and trader of natural crypto resources</p>
+            <p className="text-sm font-morion font-semibold pb-1">Galleon's</p>
+            <h1 className="text-5xl font-morion font-semibold">The Yield Bearer</h1>
+            <p className="text-md pt-1">It's not much, but it's honest work</p>
           </div>
         </header>
 
@@ -135,7 +135,7 @@ function App() {
             )}
           </>
         )}
-        <footer className="mt-2">
+        <footer className="mt-2 bg-theme-white/50">
           <div className="mx-auto flex justify-evenly max-w-4xl py-3 pb-1">
             <a
               target="_blank"
@@ -169,7 +169,7 @@ function App() {
         </footer>
       </div>
       )
-    </>
+    </div>
   );
 }
 
